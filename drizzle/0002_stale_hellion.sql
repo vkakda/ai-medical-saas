@@ -1,0 +1,1 @@
+ALTER TABLE "sessionsChart" RENAME COLUMN "SelectedDoctor" TO "selectedDoctor";

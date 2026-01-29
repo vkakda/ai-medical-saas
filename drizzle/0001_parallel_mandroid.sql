@@ -1,0 +1,1 @@
+ALTER TABLE "sessionsChart" ADD COLUMN "conversation" json;

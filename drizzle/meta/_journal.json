@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1769603768867,
+      "tag": "0000_moaning_smasher",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769605323297,
+      "tag": "0001_parallel_mandroid",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769683567230,
+      "tag": "0002_stale_hellion",
+      "breakpoints": true
+    }
+  ]
+}
