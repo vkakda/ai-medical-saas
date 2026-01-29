@@ -173,7 +173,7 @@ const [messages, setMessages] = useState<messages[]>([])
           setVapiInstance(null);
     }
 
-    cost 
+    
 
   return (
     <div className='p-6 border rounded-xl bg-secondary'>
