@@ -1,15 +1,18 @@
 "use client"
 
 import axios from 'axios';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { doctorAgents } from '../../_components/DoctorsAgentCard';
-import { Circle, PhoneCall, PhoneOff } from 'lucide-react';
+import { Circle, Loader, PhoneCall, PhoneOff } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Vapi from '@vapi-ai/web';
+import { AiSpecialistsDoctors } from '@/shared/list';
+import { toast } from 'sonner';
 
-type SessionDetail = {
+
+export type SessionDetail = {
     id: number,
     notes: string,
     sessionId: string,
@@ -27,10 +30,12 @@ function MedicalVoiceAgent() {
   const { sessionId } =  useParams();
   const [sessionDetail, setSessionDetail] = useState<SessionDetail>()
 const [callStarted, setCallStarted] = useState(false)
+const [loading, setLoading] = useState(false)
 const [vapiInstance, setVapiInstance] = useState<any>()
 const [currentRole, setCurrentRole] = useState<string | null>()
 const [liveTranscript, setLiveTranscript] = useState<string>()
 const [messages, setMessages] = useState<messages[]>([])
+const router = useRouter();
   
 
  
@@ -74,42 +79,65 @@ const [messages, setMessages] = useState<messages[]>([])
   // }
 
   const StartCall = async () => {
+    setLoading(true)
   // 1. Immediately update UI to show "Connecting..."
   setCallStarted(true); 
+
+  // 1. Get the doctor object from the database session
+  const dbDoctor = sessionDetail?.selectedDoctor;
+
+  // 2. Find the "Fresh" version of this doctor from your local list
+  // We match by name or ID to get the correct, hardcoded voiceId
+  const freshDoctorData = AiSpecialistsDoctors.find(doc => doc.id === dbDoctor?.id);
+
+  // 3. Final Voice Selection Logic
+  const finalVoiceId = freshDoctorData?.voiceId || dbDoctor?.voiceId || "en-US-JennyNeural";
+  
+  // console.log("--- VOICE DEBUG ---");
+  // console.log("Doctor Name:", dbDoctor?.name);
+  // console.log("Database VoiceId:", dbDoctor?.voiceId);
+  // console.log("List VoiceId:", freshDoctorData?.voiceId);
+  // console.log("Using Voice:", finalVoiceId);
 
   try {
     const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY!);
     setVapiInstance(vapi);
 
+    
+
     const vapiAgentConfig = {
-      name:'AI Medical Voice Agent',
+      name:dbDoctor?.name || 'Medical Agent',
       firstMessage:"Hello! I'm here to assist you with your medical concerns. How can I help you today?",
       transcriber: {
         provider:'assembly-ai',
         language:"en"
       },
       voice:{
-        provider:'Azure',
-        voiceId: sessionDetail?.selectedDoctor?.voiceId
+        provider:'azure',
+       voiceId: finalVoiceId
       },
       model:{
         provider:'openai',
-        modelName:'gpt-4',
+        model:'gpt-4o',
         messages:[
-          { role: "system", content: sessionDetail?.selectedDoctor?.agentPrompt }
+          { role: "system", 
+            content: freshDoctorData?.agentPrompt || dbDoctor?.agentPrompt || "You are a helpful medical assistant." 
+          }
         ]
       }
     };
 
-    // vapi.start(vapiAgentConfig);
+    // await vapi.start(vapiAgentConfig);
 
     // 2. Set listeners BEFORE calling .start()
     vapi.on('call-start', () => {
+      setLoading(false)
       console.log('Call started');
       setCallStarted(true); // Confirms connection
     });
 
     vapi.on('call-end', () => {
+
       setCallStarted(false);
       console.log('Call ended');
     });
@@ -133,12 +161,12 @@ const [messages, setMessages] = useState<messages[]>([])
       }
     });
 
-     vapiInstance.on('speech-start', () => {
+     vapi.on('speech-start', () => {
       console.log('Assistant started speaking');
       setCurrentRole('assistant');
     });
 
-    vapiInstance.on('speech-end', () => {
+    vapi.on('speech-end', () => {
       console.log('Assistant stopped speaking');
       setCurrentRole('user');
     });
@@ -146,8 +174,9 @@ const [messages, setMessages] = useState<messages[]>([])
 
 
     // 3. Trigger the browser permission prompt
-    await vapi.start(process.env.NEXT_PUBLIC_VAPI_VOICE_ASSISTANCE_ID);
-    // await vapi.start(vapiAgentConfig);
+    // await vapi.start(process.env.NEXT_PUBLIC_VAPI_VOICE_ASSISTANCE_ID);
+    // console.log("FINAL CONFIG SENT TO VAPI:", vapiAgentConfig);
+    await vapi.start(vapiAgentConfig);
 
   } catch (err) {
     // 4. Reset UI if permission is denied or key is missing
@@ -158,7 +187,8 @@ const [messages, setMessages] = useState<messages[]>([])
 }
 
 
-  const endCall = () => {
+  const endCall = async () => {
+
     if (!vapiInstance) return;
           vapiInstance.stop();
 
@@ -166,14 +196,31 @@ const [messages, setMessages] = useState<messages[]>([])
           // vapiInstance.off('call-end');
           // vapiInstance.off('message');
 
+          //remove all the instances
           vapiInstance.removeAllListeners();
 
           //reset call state
           setCallStarted(false);
           setVapiInstance(null);
+          
+          toast.success('Your report is generated')
+          router.replace('/dashboard');
+          
+
+
     }
 
-    
+    const generateReport = async () => {
+      const result = await axios.post('/api/medical-report', {
+        messages: messages,
+        sessionDetail: sessionDetail,
+        sessionId: sessionId
+      });
+
+      console.log(result.data)
+      return result.data;
+      
+     }
 
   return (
     <div className='p-6 border rounded-xl bg-secondary'>
@@ -204,10 +251,11 @@ const [messages, setMessages] = useState<messages[]>([])
         {!callStarted ?
         
         <Button className='mt-10'
-          onClick={StartCall}
-        > <PhoneCall />Start Call</Button>
+          onClick={StartCall} disabled={loading || !sessionDetail?.selectedDoctor?.name}
+        >{loading ? <Loader className='animate-spin' /> : <PhoneCall />} Start Call</Button>
         : 
-        <Button variant={'destructive'} onClick={endCall} className='mt-10'><PhoneOff />Disconnect</Button>
+        <Button variant={'destructive'} onClick={endCall} className='mt-10' disabled={loading}>
+          {loading ? <Loader className='animate-spin' /> : <PhoneOff />} Disconnect</Button>
         }
 
       </div>
