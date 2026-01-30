@@ -110,15 +110,15 @@ const router = useRouter();
       name:dbDoctor?.name || 'Medical Agent',
       firstMessage:"Hello! I'm here to assist you with your medical concerns. How can I help you today?",
       transcriber: {
-        provider:'assembly-ai',
+        provider:'assembly-ai' as const,
         language:"en"
       },
       voice:{
-        provider:'azure',
+        provider:'azure' as const,
        voiceId: finalVoiceId
       },
       model:{
-        provider:'openai',
+        provider:'openai' as const,
         model:'gpt-4o',
         messages:[
           { role: "system", 
@@ -177,7 +177,7 @@ const router = useRouter();
     // 3. Trigger the browser permission prompt
     // await vapi.start(process.env.NEXT_PUBLIC_VAPI_VOICE_ASSISTANCE_ID);
     // console.log("FINAL CONFIG SENT TO VAPI:", vapiAgentConfig);
-    await vapi.start(vapiAgentConfig);
+    await vapi.start(vapiAgentConfig as any);
 
   } catch (err) {
     // 4. Reset UI if permission is denied or key is missing
