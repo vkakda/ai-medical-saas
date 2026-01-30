@@ -108,7 +108,7 @@ const router = useRouter();
 
     const vapiAgentConfig = {
       name:dbDoctor?.name || 'Medical Agent',
-      firstMessage:"Hello! I'm here to assist you with your medical concerns. How can I help you today?",
+      firstMessage:"Hello! I'm here to assist you with your medical concerns. please tell me your name and age.",
       transcriber: {
         provider:'assembly-ai' as const,
         language:"en"
