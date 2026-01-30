@@ -148,7 +148,7 @@ const router = useRouter();
     vapi.on('message', (message) => {
       if (message.type === 'transcript') {
         const {role, transcriptType, transcript} = message;
-        console.log(`${message.role}: ${message.transcript}`);
+        // console.log(`${message.role}: ${message.transcript}`);
         if(transcriptType === 'partial'){
         setLiveTranscript(transcript);
         setCurrentRole(role);
@@ -188,28 +188,58 @@ const router = useRouter();
 }
 
 
-  const endCall = async () => {
+  // const endCall = async () => {
 
+  //   if (!vapiInstance) return;
+  //         vapiInstance.stop();
+
+  //         // vapiInstance.off('call-start');
+  //         // vapiInstance.off('call-end');
+  //         // vapiInstance.off('message');
+
+  //         //remove all the instances
+  //         vapiInstance.removeAllListeners();
+
+  //         //reset call state
+  //         setCallStarted(false);
+  //         setVapiInstance(null);
+          
+  //         toast.success('Your report is generated')
+  //         router.replace('/dashboard');
+          
+
+
+  //   }
+
+    const endCall = async () => {
     if (!vapiInstance) return;
-          vapiInstance.stop();
 
-          // vapiInstance.off('call-start');
-          // vapiInstance.off('call-end');
-          // vapiInstance.off('message');
+    setLoading(true); // Show loader while report is saving
+    try {
+        // 1. Stop the Vapi call
+        vapiInstance.stop();
+        vapiInstance.removeAllListeners();
 
-          //remove all the instances
-          vapiInstance.removeAllListeners();
+        // 2. CALL THE REPORT GENERATION FUNCTION
+        console.log("Generating report with messages:", messages);
+        await generateReport(); 
 
-          //reset call state
-          setCallStarted(false);
-          setVapiInstance(null);
-          
-          toast.success('Your report is generated')
-          router.replace('/dashboard');
-          
-
-
+        // 3. Clean up states
+        setCallStarted(false);
+        setVapiInstance(null);
+        
+        toast.success('Your report has been generated successfully!');
+        
+        // 4. Redirect only AFTER the report is saved
+        router.replace('/dashboard');
+    } catch (error) {
+        console.error("Failed to generate report:", error);
+        toast.error("Call ended, but failed to save the report.");
+        setCallStarted(false);
+    } finally {
+        setLoading(false);
     }
+};
 
     const generateReport = async () => {
       const result = await axios.post('/api/medical-report', {
