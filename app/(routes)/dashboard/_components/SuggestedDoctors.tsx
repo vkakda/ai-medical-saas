@@ -17,11 +17,13 @@ function SuggestedDoctors({ doctorAgents,setSelectedDoctor,selectedDoctor }: pro
     <div className={`flex flex-col items-center  border-2 p-4 rounded-2xl shadow-sm hover:border-blue-400 hover:shadow-md transition cursor-pointer ${ selectedDoctor?.id == doctorAgents.id && 'border-blue-800 shadow-md'}`} 
     onClick={() => setSelectedDoctor(doctorAgents)}>
 
-      <div className="relative w-20 h-20 mb-4">
+      <div className="relative w-20 h-20 mb-4 rounded-full overflow-hidden border border-gray-100 bg-slate-50 shrink-0">
       <Image src={doctorAgents.image} alt={doctorAgents.name} 
           sizes="80px"
+          unoptimized
           className="object-cover rounded-full p-0.5"
-          priority 
+           fill
+           priority
       />
       </div>
 
