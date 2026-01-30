@@ -10,8 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { SessionDetail } from '../medical-agent/[sessionId]/page'
-import { Button } from '@/components/ui/button'
 import moment from 'moment';
+import ViewReportDialog from './ViewReportDialog';
 
 type Props = {
     historyList: SessionDetail[]
@@ -38,7 +38,7 @@ function HistoryTable({historyList}: Props)  {
         <TableCell>{record.notes}</TableCell>
         <TableCell>{moment(new Date(record.createdAt)).fromNow()}</TableCell>
         <TableCell className="text-right">
-          <Button variant={'ghost'} className='cursor-pointer'>View Report</Button>
+         <ViewReportDialog record={record} />
         </TableCell>
       </TableRow>
     ))}

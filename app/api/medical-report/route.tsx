@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 const REPORT_GEN_PROMPT = `You are an Al Medical Voice Agent that just finished a voice conversation with a user. Based on the doctor ai agent info and conversation between AI doctor agent and user, generate a structured report with the following fields:
 1. sessionld: a unique session identifier
 2. agent: the medical specialist name (e.g., "General Physician Al")
-3. user: name of the patient or "Anonymous" if not provided
+3. user: name of the patient or "Anonymous" if not provided and also his age should be there
 4. timestamp: current date and time in ISO format
 5. chief Complaint: one-sentence summary of the main health concern
 6. summary: a 2-3 sentence summary of the conversation, symptoms, and recommendations
@@ -22,6 +22,7 @@ Return the result in this JSON format:
 "sessionld": "string",
 "agent": "string",
 "user": "string",
+"age": "number"
 "timestamp": "ISO Date string",
 "chiefComplaint": "string",
 "summary": "string",
