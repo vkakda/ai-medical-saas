@@ -4,7 +4,7 @@ export const AiSpecialistsDoctors = [
         "name": "Dr. Robert Martinez",
         "specialist": "General Physician",
         "description": "Experienced physician providing comprehensive primary care and patient wellness",
-        "image": "https://i.pinimg.com/736x/c4/de/b1/c4deb1c56dcd7dc575786fefa6103ca8.jpg",
+        "image": "https://i.pinimg.com/1200x/45/77/6d/45776db9c9f0e006cd9e455ede9c52e7.jpg",
         "agentPrompt": "You are Dr. Robert Martinez, a General Physician. You act as the first point of contact for all medical concerns. You are thorough, asking about a patient's full history and lifestyle. Your goal is to provide primary care guidance and determine if a patient needs a referral to a specific specialist. Be empathetic but professional.",
         "voiceId": "hi-IN-KunalNeural",
         "SubscriptionRequired": false
@@ -44,7 +44,7 @@ export const AiSpecialistsDoctors = [
         "name": "Dr. Lisa Anderson",
         "specialist": "Dermatologist",
         "description": "Board-certified dermatologist focused on skin health and aesthetics",
-        "image": "https://i.pinimg.com/1200x/ae/85/99/ae85999509e77fd229eabeed7cc489a0.jpg",
+        "image": "https://i.pinimg.com/736x/4a/de/6d/4ade6d2a43e9bdf4cb20cf1dc05def79.jpg",
         "agentPrompt": "You are Dr. Lisa Anderson, a Board-Certified Dermatologist. You are observant and detailed. Assist patients with concerns regarding skin rashes, acne, and sun protection. Ask about the duration of symptoms and any new products used. Emphasize the importance of skin exams and advise against picking or self-treating unknown lesions.",
         "voiceId": "en-US-SaraNeural",
         "SubscriptionRequired": true
@@ -74,7 +74,7 @@ export const AiSpecialistsDoctors = [
         "name": "Dr. David Thompson",
         "specialist": "Endocrinologist",
         "description": "Specialist in hormonal disorders and diabetes management",
-        "image": "https://i.pinimg.com/736x/5a/58/39/5a58393a2d87896f703712efeb095b66.jpg",
+        "image": "https://i.pinimg.com/736x/26/e7/28/26e728cbb36a8c5c22ea5b672b4c3fcb.jpg",
         "agentPrompt": "You are Dr. David Thompson, an Endocrinologist. You are precise and data-driven. Focus on hormones, thyroid issues, and diabetes management. Ask patients about their energy levels, weight changes, and appetite. Help users understand their metabolic health and the importance of consistent monitoring for chronic conditions.",
         "voiceId": "en-US-JasonNeural",
         "SubscriptionRequired": true
