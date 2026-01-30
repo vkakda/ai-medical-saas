@@ -18,7 +18,8 @@ export type SessionDetail = {
     sessionId: string,
     report: JSON,
     selectedDoctor: doctorAgents,
-    createdAt: string
+    createdAt: string,
+    createdBy: string;
 }
 
 type messages = {
