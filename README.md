@@ -2,6 +2,13 @@
 # <p align="center">🩺 AI Medical SaaS : MediCall</p>
 
 <p align="center">
+  <a href="https://medi-call.vercel.app/">
+    <img src="https://img.shields.io/badge/LIVE_DEMO-Visit_MediCall-6C47FF?style=for-the-badge&logo=vercel&logoColor=white" />
+  </a>
+</p>
+
+
+<p align="center">
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" />
   <img src="https://img.shields.io/badge/Clerk-Authentication-blue?style=for-the-badge&logo=clerk" />
   <img src="https://img.shields.io/badge/Gemini_AI-Powered-orange?style=for-the-badge&logo=google-gemini" />
