@@ -57,7 +57,7 @@ MediCall uses a secondary AI processing layer to transform raw chat data into pr
 
 1. **Clone & Enter**
 ```bash
-   git clone [https://github.com/your-username/ai-medical-saas.git](https://github.com/your-username/ai-medical-saas.git)
+   git clone [https://github.com/vkakda/ai-medical-saas.git](https://github.com/vkakda/ai-medical-saas.git)
    cd ai-medical-saas
 
 ```
