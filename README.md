@@ -9,22 +9,33 @@
 </p>
 
 <p align="center">
-  <strong>Instant Specialist Consultations:</strong> A premium, high-end medical diagnostic platform leveraging Generative AI to provide specialized health consultations at your fingertips.
+  <strong>Instant Specialist Consultations & Intelligent Reporting:</strong> A premium, high-end medical diagnostic platform leveraging Generative AI to provide specialized health consultations and automated clinical reports at your fingertips.
 </p>
 
 ---
 
 ## ✨ 🌟 Key Features
 
+* **📑 AI Medical Report Generation** MediCall doesn't just talk; it documents. After every session, the AI engine synthesizes the entire conversation into a structured medical report. It automatically outlines your symptoms, highlights potential concerns, and suggests actionable next steps—all stored securely in your dashboard.
+
 * **👨‍⚕️ AI Specialist Agents** A curated list of specialized AI doctors (Cardiology, Pediatrics, General Medicine, etc.) built with advanced prompt engineering for high-accuracy diagnostics.
 
 * **💬 Instant Consultations** Real-time, interactive chat interface with specialized AI agents for symptom analysis and preliminary medical advice.
 
-* **📜 Consultation History** A sleek, organized dashboard to review past medical sessions. Includes a custom **HistoryTable** with deep-link report viewing.
+* **📜 Consultation History** A sleek, organized dashboard to review past medical sessions. Includes a custom **HistoryTable** with deep-link report viewing and data persistence.
 
 * **🔐 Secure Authentication** Enterprise-grade security integrated with **Clerk**, featuring protected routes and seamless user onboarding.
 
 * **💎 Premium Access Logic** Smart subscription-based access where high-tier specialists are locked behind a sleek "Premium" badge for monetized scaling.
+
+---
+
+## 🚀 The Reporting Engine
+
+MediCall uses a secondary AI processing layer to transform raw chat data into professional summaries:
+1. **Extraction:** Identifies key symptoms and patient history from the chat.
+2. **Analysis:** Correlates data with specialist-specific medical knowledge.
+3. **Generation:** Produces a clean, readable report that can be reviewed anytime via the **View Report** dialog in your history.
 
 ---
 
@@ -34,7 +45,7 @@
 | :--- | :--- |
 | **Framework** | Next.js 15+ (App Router & Turbopack) |
 | **Auth** | Clerk (JWT Session Management) |
-| **AI Engine** | Google Gemini Pro API |
+| **AI Engine** | vapi AI with Open AI and openrouter ai |
 | **Database** | Neon PostgreSQL (Serverless) |
 | **ORM** | Drizzle ORM |
 | **Styling** | Tailwind CSS & Shadcn UI |
@@ -48,26 +59,24 @@
 ```bash
    git clone [https://github.com/your-username/ai-medical-saas.git](https://github.com/your-username/ai-medical-saas.git)
    cd ai-medical-saas
+
 ```
 
 2. **Install Dependencies**
 ```bash
-  npm install
+npm install
 
 ```
 
 
 3. **Configure Environment** Create a `.env.local` file and inject your credentials:
 ```env
-# Clerk Auth
+
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_pub_key
 CLERK_SECRET_KEY=your_clerk_secret_key
-
-# Database
 DATABASE_URL=your_postgresql_url
-
-# AI
-NEXT_PUBLIC_GEMINI_API_KEY=your_google_gemini_key
+OPENROUTER_API_KEY=your_key
+NEXT_PUBLIC_VAPI_API_KEY=your_vapi_key
 
 ```
 
