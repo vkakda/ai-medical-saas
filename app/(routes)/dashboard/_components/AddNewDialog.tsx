@@ -14,18 +14,42 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import axios from "axios"
 import { ArrowRight, Loader2 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { doctorAgents } from "./DoctorsAgentCard"
 import SuggestedDoctors from "./SuggestedDoctors"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export function AddNewDialog() {
 
     const [note, setNote] = useState<string>();
     const [loading, setLoading] = useState(false)
+    const [eligibilityLoading, setEligibilityLoading] = useState(true)
+    const [canStartConsultation, setCanStartConsultation] = useState(true)
     const [suggestedDoctors, setSuggestedDoctors] = useState<doctorAgents[]>()
     const [selectedDoctor, setSelectedDoctor] = useState<any>()
     const router = useRouter();
+
+    useEffect(() => {
+      const loadEligibility = async () => {
+        try {
+          const res = await axios.get("/api/consultation-eligibility");
+          setCanStartConsultation(!!res.data?.canStartConsultation);
+        } catch {
+          // If eligibility can't be fetched, don't block UX
+          setCanStartConsultation(true);
+        } finally {
+          setEligibilityLoading(false);
+        }
+      };
+
+      loadEligibility();
+    }, []);
+
+    const goToBilling = () => {
+      toast.error("Free plan allows only 1 consultation. Please upgrade to Premium.");
+      router.push("/dashboard/billing");
+    };
 
     const OnClickNext = async () => {
     setLoading(true);
@@ -42,22 +66,42 @@ export function AddNewDialog() {
 const onStartConsultation = async () => {
     setLoading(true);
 
-    const result = await axios.post('/api/session-chat', {
-        notes: note,
-        selectedDoctor: selectedDoctor
-    });
-    console.log(result.data)
+    try {
+      const result = await axios.post('/api/session-chat', {
+          notes: note,
+          selectedDoctor: selectedDoctor
+      });
+      console.log(result.data)
 
-    if(result.data?.sessionId){
-        console.log(result.data.sessionId)
+      if(result.data?.sessionId){
+          console.log(result.data.sessionId)
 
-        router.push('/dashboard/medical-agent/'+result.data.sessionId);
+          router.push('/dashboard/medical-agent/'+result.data.sessionId);
+      }
+    } catch (err: any) {
+      if (err?.response?.status === 402) {
+        goToBilling();
+      } else {
+        toast.error("Failed to start consultation");
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
 
 }
 
     return (
+      eligibilityLoading ? (
+        <Button className="mt-3" disabled>
+          <Loader2 className="animate-spin" />
+          Checking plan...
+        </Button>
+      ) : !canStartConsultation ? (
+        <Button className="mt-3" variant="secondary" onClick={goToBilling}>
+          Upgrade to Premium
+          <ArrowRight />
+        </Button>
+      ) : (
         <Dialog>
             <DialogTrigger asChild>
                 <Button className='mt-3'>+ Start a Consultation</Button>
@@ -109,5 +153,6 @@ const onStartConsultation = async () => {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+      )
     )
 }

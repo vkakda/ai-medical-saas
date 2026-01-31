@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { desc, eq } from "drizzle-orm";
 import { AiSpecialistsDoctors } from "@/shared/list";
+import { isPremiumActiveForUser } from "@/lib/billing";
+
+const FREE_CONSULTATION_LIMIT = 1;
 
 export async function POST(req: NextRequest) {
     try {
@@ -17,6 +20,28 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        const isPremium = await isPremiumActiveForUser(user.id);
+
+        const email = user?.primaryEmailAddress?.emailAddress as string;
+        if (!email) {
+            return NextResponse.json({ error: "Missing user email" }, { status: 400 });
+        }
+
+        // Enforce free-plan limit (server-side source of truth)
+        if (!isPremium) {
+            const sessions = await db
+                .select({ id: SessionsTable.id })
+                .from(SessionsTable)
+                .where(eq(SessionsTable.createdBy, email));
+
+            if (sessions.length >= FREE_CONSULTATION_LIMIT) {
+                return NextResponse.json(
+                    { error: "Free plan limit reached. Please upgrade to Premium.", code: "FREE_LIMIT_REACHED" },
+                    { status: 402 }
+                );
+            }
+        }
+
         // FIND the full doctor data from your list to ensure voiceId is included
         const fullDoctorData = AiSpecialistsDoctors.find(doc => doc.id === selectedDoctor.id);
 
@@ -25,7 +50,7 @@ export async function POST(req: NextRequest) {
         // FIX: .returning() returns an array of the inserted row(s)
         const result = await db.insert(SessionsTable).values({
             sessionId: sessionId,
-            createdBy: user?.primaryEmailAddress?.emailAddress as string,
+            createdBy: email,
             notes: notes,
             selectedDoctor: fullDoctorData || selectedDoctor,
             // Ensure your schema actually expects a string for createdAt if using toISOString()

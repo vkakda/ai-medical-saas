@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { doctorAgents } from '../../_components/DoctorsAgentCard';
 import { Circle, Loader, PhoneCall, PhoneOff } from 'lucide-react';
 import Image from 'next/image';
@@ -36,6 +36,8 @@ const [vapiInstance, setVapiInstance] = useState<any>()
 const [currentRole, setCurrentRole] = useState<string | null>()
 const [liveTranscript, setLiveTranscript] = useState<string>()
 const [messages, setMessages] = useState<messages[]>([])
+const [callSeconds, setCallSeconds] = useState(0)
+const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 const router = useRouter();
   
 
@@ -44,6 +46,32 @@ const router = useRouter();
   useEffect(()=>{
     sessionId && GetSessionDetails();
   },[sessionId])
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  const startTimer = () => {
+    stopTimer()
+    setCallSeconds(0)
+    timerRef.current = setInterval(() => {
+      setCallSeconds((s) => s + 1)
+    }, 1000)
+  }
+
+  useEffect(() => {
+    return () => stopTimer()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const formatCallTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
 
   const GetSessionDetails= async ()=>{
     
@@ -135,12 +163,15 @@ const router = useRouter();
       setLoading(false)
       console.log('Call started');
       setCallStarted(true); // Confirms connection
+      startTimer()
     });
 
     vapi.on('call-end', () => {
 
       setCallStarted(false);
       console.log('Call ended');
+      stopTimer()
+      setCallSeconds(0)
     });
 
    
@@ -182,6 +213,8 @@ const router = useRouter();
   } catch (err) {
     // 4. Reset UI if permission is denied or key is missing
     setCallStarted(false);
+    stopTimer()
+    setCallSeconds(0)
     console.error("Connection failed:", err);
     alert("Microphone access is required to start the call.");
   }
@@ -216,6 +249,7 @@ const router = useRouter();
 
     setLoading(true); // Show loader while report is saving
     try {
+        stopTimer()
         // 1. Stop the Vapi call
         vapiInstance.stop();
         vapiInstance.removeAllListeners();
@@ -227,6 +261,7 @@ const router = useRouter();
         // 3. Clean up states
         setCallStarted(false);
         setVapiInstance(null);
+        setCallSeconds(0)
         
         toast.success('Your report has been generated successfully!');
         
@@ -236,6 +271,8 @@ const router = useRouter();
         console.error("Failed to generate report:", error);
         toast.error("Call ended, but failed to save the report.");
         setCallStarted(false);
+        stopTimer()
+        setCallSeconds(0)
     } finally {
         setLoading(false);
     }
@@ -257,7 +294,7 @@ const router = useRouter();
     <div className='p-6 border rounded-xl bg-secondary'>
       <div className='flex justify-between items-center mb-4'>
         <h2 className="p-1 px-2 border rounded-md flex gap-2"> <Circle className={`h-2 w-2 rounded-full ${callStarted? 'bg-green-500':'bg-red-500'}`} />{callStarted? 'Connected...': 'Not connected'} </h2>
-        <h2 className='font-bold text-xl text-gray-400'>19:20</h2>
+        <h2 className='font-bold text-xl text-gray-400'>{callStarted ? formatCallTime(callSeconds) : '00:00'}</h2>
       </div>
      {sessionDetail &&  
       <div className='flex items-center flex-col mt-10'>

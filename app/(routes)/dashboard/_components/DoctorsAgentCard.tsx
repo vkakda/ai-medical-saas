@@ -1,11 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { IconArrowRight, IconLock } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useAuth, useUser } from '@clerk/nextjs'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 
 export type doctorAgents = {
     id: number,
@@ -20,17 +23,47 @@ export type doctorAgents = {
 
 type props = {
     doctorAgents: doctorAgents
+    isPremiumUser?: boolean
+    planLoading?: boolean
 }
 
-const DoctorsAgentCard = ({ doctorAgents }:props) => {
+const DoctorsAgentCard = ({ doctorAgents, isPremiumUser = false, planLoading = false }:props) => {
 
-  const { user, isLoaded } = useUser();
-  
-  if (!isLoaded) return null;
-  
-  const isPremiumUser = user?.publicMetadata?.plan === 'premium';
+  const router = useRouter();
+  const [starting, setStarting] = useState(false);
 
   const isLocked = doctorAgents.SubscriptionRequired && !isPremiumUser;
+
+  const onClick = async () => {
+    if (isLocked) {
+      toast.error('This doctor is Premium. Please upgrade to unlock.');
+      router.push('/dashboard/billing');
+      return;
+    }
+
+    try {
+      setStarting(true);
+      const result = await axios.post('/api/session-chat', {
+        notes: '',
+        selectedDoctor: doctorAgents,
+      });
+
+      if (result.data?.sessionId) {
+        router.push('/dashboard/medical-agent/' + result.data.sessionId);
+      } else {
+        toast.error('Failed to start consultation');
+      }
+    } catch (err: any) {
+      if (err?.response?.status === 402) {
+        toast.error('Free plan allows only 1 consultation. Please upgrade to Premium.');
+        router.push('/dashboard/billing');
+        return;
+      }
+      toast.error('Failed to start consultation');
+    } finally {
+      setStarting(false);
+    }
+  };
 
 
   return (
@@ -48,11 +81,12 @@ const DoctorsAgentCard = ({ doctorAgents }:props) => {
         
         <Button 
         className='mt-4 w-full justify-between' 
-        disabled={isLocked}
+        disabled={starting || planLoading}
         variant={isLocked ? "secondary" : "default"}
+        onClick={onClick}
       >
-        {isLocked ? 'Upgrade to Unlock' : 'Start Consultation'}
-        {isLocked ? <IconLock size={18} /> : <IconArrowRight size={18} />}
+        {starting ? 'Starting...' : (isLocked ? 'Upgrade to Unlock' : 'Start Consultation')}
+        {starting ? <Loader2 className="animate-spin" size={18} /> : (isLocked ? <IconLock size={18} /> : <IconArrowRight size={18} />)}
       </Button>
 
     </div>
