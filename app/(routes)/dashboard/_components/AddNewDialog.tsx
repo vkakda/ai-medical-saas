@@ -52,16 +52,44 @@ export function AddNewDialog() {
     };
 
     const OnClickNext = async () => {
-    setLoading(true);
-    
-        const result = await axios.post('/api/suggest-doctors', {
-            notes: note
+      setLoading(true);
+
+      try {
+        const result = await axios.post("/api/suggest-doctors", {
+          notes: note,
         });
-       
+
         console.log(result.data);
-        setSuggestedDoctors(result.data);
+
+        // multiple possible shapes from the server/model
+        let doctors: any[] | undefined;
+        if (Array.isArray(result.data)) {
+          doctors = result.data;
+        } else if (Array.isArray(result.data.doctors)) {
+          doctors = result.data.doctors;
+        } else if (Array.isArray(result.data.recommended_doctors)) {
+          doctors = result.data.recommended_doctors;
+        } else if (Array.isArray(result.data.recommendedDoctors)) {
+          doctors = result.data.recommendedDoctors;
+        }
+
+        if (Array.isArray(doctors) && doctors.length > 0) {
+          setSuggestedDoctors(doctors as doctorAgents[]);
+        } else {
+          toast.error(
+            "Could not find any doctors. Please try again or adjust your notes."
+          );
+        }
+      } catch (err: any) {
+        const msg =
+          err?.response?.data?.error?.message ||
+          err?.message ||
+          "Failed to fetch suggested doctors.";
+        toast.error(msg);
+      } finally {
         setLoading(false);
-}
+      }
+    }
 
 const onStartConsultation = async () => {
     setLoading(true);
@@ -110,7 +138,21 @@ const onStartConsultation = async () => {
                 <DialogHeader>
                     <DialogTitle>Patient's details</DialogTitle>
                     <DialogDescription asChild>
-                      {!suggestedDoctors ? 
+                      {Array.isArray(suggestedDoctors) && suggestedDoctors.length > 0 ? (
+                        <div>
+                            <h2 className="font-semibold text-lg mb-4">Suggested Doctors</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto">
+                                {suggestedDoctors.map((doctor, index) => (
+                                    <SuggestedDoctors
+                                        key={doctor?.id ?? index}
+                                        doctorAgents={doctor}
+                                        setSelectedDoctor={() => setSelectedDoctor(doctor)}
+                                        selectedDoctor={selectedDoctor}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                      ) : (
                         <div>
                             <h2>Add your Symptoms or any other details</h2>
                             <Textarea 
@@ -119,18 +161,7 @@ const onStartConsultation = async () => {
                                 onChange={(e) => setNote(e.target.value)}
                             />
                         </div>
-                        :
-                        <div>
-                            <h2 className="font-semibold text-lg mb-4">Suggested Doctors</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto">
-                                {suggestedDoctors.map((doctor, index) => (
-                                    <SuggestedDoctors key={index} doctorAgents={doctor} setSelectedDoctor={() =>setSelectedDoctor(doctor)}
-                                    selectedDoctor={selectedDoctor}
-                                     />
-                                ))}
-                            </div>
-                        </div>
-                      }
+                      )}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
